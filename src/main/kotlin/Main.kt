@@ -15,12 +15,11 @@ fun main() {
         val pieza = crearPieza(tablero)
         mourePieza(pieza,tablero,scan)
         hacerLinea(tablero)
-    } while (!gameOver(tablero,pieza))
+    } while (!gameOver(tablero))
     println("GAME OVER!!")
 }
 
-
-fun gameOver (tablero: Array<Array<Char>>, pieza: Array<pos>):Boolean {
+fun gameOver (tablero: Array<Array<Char>>):Boolean {
     for (y in 0..3) {
         for (x in tablero[y].indices) if (tablero[y][x] == '1') return true
     }
@@ -124,7 +123,7 @@ fun crearPieza(tablero:Array<Array<Char>>):Array<pos> {
             pieza[2] = pos(1,1)
             pieza[3] = pos(2,1)
         }
-    }
+}
     return pieza
 }
 
@@ -135,9 +134,9 @@ fun crearTablero(scan:Scanner): Array<Array<Char>> {
     var x:Int
     var y:Int
     do {
-        println("Di el tamaño horizontal: ")
-        y = comprobarInt("El valor introducido no es correcto",scan)
         println("Di el tamaño vertical: ")
+        y = comprobarInt("El valor introducido no es correcto",scan)
+        println("Di el tamaño horizontal: ")
         x = comprobarInt("El valor introducido no es correcto",scan)
         if (x < 4 || y < 4) println("Uno de los dos valores introducidos no cumple con las medidas minimas")
     }while (x < 4 || y < 4)
@@ -165,27 +164,40 @@ fun comprobarInt(mensajeError: String,scan:Scanner):Int {
 }
 
 fun hacerLinea(tablero: Array<Array<Char>>) {
-    var linea: Int = 0
-    var hayLinea: Boolean
-    for (y in tablero.lastIndex downTo 0) {
-        hayLinea = true
-        for (x in tablero[y]) {
-            linea = y
-            if (x != '1') hayLinea = false
+    do {
+
+        val lineas = Array(tablero.size) { true }
+        for (y in tablero.indices) {
+            for (x in tablero[y].indices) {
+                if (tablero[y][x] != '1') lineas[y] = false
+            }
+            if (lineas[y]) for (x in tablero[y].indices) tablero[y][x] = '0'
         }
 
-        if (hayLinea) {
-            for (i in tablero[linea].indices) tablero[linea][i] = '0'
+        for (l in lineas.lastIndex downTo 4) {
+            if (lineas[l]) bajarPiezas(tablero,l)
+        }
 
-            for (y in linea downTo  4) for (x in tablero[y].indices) {
-                if (tablero[y][x] == '1') {
-                    var posY = y
-                    while (posY != tablero.lastIndex || tablero[posY + 1][x] == '1') {
-                        tablero[posY][x] = '0'
-                        tablero[posY + 1][x] = '1'
-                        posY += 1
+    } while (lineas.any { it } )
+
+}
+
+fun bajarPiezas (tablero: Array<Array<Char>>, linea: Int) {
+    for (y in linea downTo  0) {
+        for (x in tablero[y].indices) {
+
+            if (tablero[y][x] == '1') {
+
+                var guardadoLinea = y
+                while (guardadoLinea < tablero.lastIndex) {
+                    if (tablero[guardadoLinea + 1][x] == '0') {
+                        tablero[guardadoLinea][x] = '0'
+                        tablero[guardadoLinea + 1][x] = '1'
+                        guardadoLinea ++
                     }
+                    else guardadoLinea = tablero.lastIndex
                 }
+
             }
         }
     }
